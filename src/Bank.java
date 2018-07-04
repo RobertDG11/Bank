@@ -3,12 +3,21 @@ import java.util.TreeSet;
 
 public class Bank {
     private static final double COMMISSION = 0.003;
+    private static Bank bank;
 
     private TreeSet<Investor> investors;
     private Creditor creditor;
 
-    public Bank() {
+    private Bank() {
         investors = new TreeSet<>();
+    }
+
+    public static Bank getInstance() {
+        if (bank == null) {
+            bank = new Bank();
+        }
+
+        return bank;
     }
 
     public void addInvestor(Investor investor) {
@@ -35,19 +44,12 @@ public class Bank {
         }
     }
 
-    public void printInvestorsSituation() {
-        Iterator<Investor> iterator = investors.iterator();
-        while(iterator.hasNext()) {
-            System.out.println(iterator.next().toString());
-        }
-    }
-
     public void printSuccessfulMessage() {
         System.out.format("Mr/Mrs %s your credit was approved. For your credit of %.2f you will " +
-                "have to pay a lunar rate of %.2f for a total sum of %.2f. Your APRC index is " +
-                ".Have a wonderful day!\n",
+                "have to pay a lunar rate of %.2f for a total sum of %.2f. Your APRC index is %.2f%%" +
+                ". Have a wonderful day!\n",
                 creditor.getName(), creditor.getCreditBackup(), creditor.getLunarRate(),
-                creditor.getTotalToPay(), creditor.getAprcIndex());
+                creditor.getTotalToPay(), creditor.getAprcIndex() * 100);
 
     }
 
@@ -64,14 +66,6 @@ public class Bank {
 
     public TreeSet<Investor> getInvestors() {
         return investors;
-    }
-
-    public void setInvestors(TreeSet<Investor> investors) {
-        this.investors = investors;
-    }
-
-    public Creditor getCreditor() {
-        return creditor;
     }
 
     public void setCreditor(Creditor creditor) {
@@ -99,7 +93,6 @@ public class Bank {
             creditor.calculateAPRC();
 
             i.withdrawMoney(creditor.getCredit());
-            i.setMoneyInvestedBackup(i.getMoneyInvested());
             addInvestor(i);
             printSuccessfulMessage();
 

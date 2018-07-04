@@ -1,6 +1,3 @@
-import java.util.Iterator;
-import java.util.TreeSet;
-
 public class Investor implements Comparable<Investor> {
     private int uniqueId;
     private String name;
@@ -8,7 +5,6 @@ public class Investor implements Comparable<Investor> {
     private String phoneNumber;
     private String emailAddress;
     private double moneyInvested;
-    private double moneyInvestedBackup;
     private double interest;
 
     static class InvestorBuilder {
@@ -36,7 +32,6 @@ public class Investor implements Comparable<Investor> {
 
         InvestorBuilder withMoneyInvested(double moneyInvested) {
             investor.setMoneyInvested(moneyInvested);
-            investor.setMoneyInvestedBackup(moneyInvested);
             return this;
         }
 
@@ -106,15 +101,9 @@ public class Investor implements Comparable<Investor> {
         this.interest = interest;
     }
 
-    public void addFunds(double amount) { moneyInvested += amount; }
-
     public int getUniqueId() { return uniqueId; }
 
     public void setUniqueId(int uniqueId) { this.uniqueId = uniqueId; }
-
-    public double getMoneyInvestedBackup() { return moneyInvestedBackup; }
-
-    public void setMoneyInvestedBackup(double moneyInvestedBackup) { this.moneyInvestedBackup = moneyInvestedBackup; }
 
     @Override
     public String toString() {
@@ -131,12 +120,10 @@ public class Investor implements Comparable<Investor> {
 
     @Override
     public int compareTo(Investor i) {
-        if (moneyInvested == 0) {
+        if (moneyInvested == 0)
             return 1;
-        }
-        if (i.moneyInvested == 0) {
+        if (i.moneyInvested == 0)
             return -1;
-        }
         if (interest > i.interest)
             return 1;
         else if (interest < i.interest)
@@ -151,9 +138,5 @@ public class Investor implements Comparable<Investor> {
 
     public void addMoney(double amount) {
         moneyInvested += amount;
-    }
-
-    public void revertMoney() {
-        moneyInvested = moneyInvestedBackup;
     }
 }

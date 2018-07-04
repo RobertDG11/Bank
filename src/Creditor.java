@@ -47,8 +47,6 @@ public class Creditor {
 
     public double getAprcIndex() { return aprcIndex; }
 
-    public void setAprcIndex(double dae) { this.aprcIndex = dae; }
-
     static class CreditorBuilder {
         Creditor creditor = new Creditor();
 
@@ -99,7 +97,7 @@ public class Creditor {
     }
 
     public void calculateAPRC() {
-        aprcIndex = (getLunarRate() - getCredit()) / getTotalToPay();
+        aprcIndex = getLunarRate()  / getTotalToPay();
     }
 
     public void addCommission(double commission) {

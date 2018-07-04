@@ -1,5 +1,7 @@
-import sun.nio.cs.US_ASCII;
-
+import java.io.BufferedReader;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.Scanner;
 
 public class Server {
@@ -7,10 +9,13 @@ public class Server {
         INVESTOR,
         CREDITOR
     }
+
     private static final int INVESTOR_PARAMETERS = 6;
     private static final int CREDITOR_PARAMETERS = 6;
+
     private static int investorsNumber;
     private static int creditorsNumber;
+    private static Bank bank;
 
     private static void uiMessages(int messageType, UserType userType) {
         int numberParameters;
@@ -23,28 +28,40 @@ public class Server {
 
         switch (messageType % numberParameters) {
             case 0:
-                System.out.println("Enter your name");
+                if (userType == UserType.INVESTOR)
+                    System.out.println("Enter investor's name:");
+                else
+                    System.out.println("Enter your name:");
                 break;
             case 1:
-                System.out.println("Enter your surname");
+                if (userType == UserType.INVESTOR)
+                    System.out.println("Enter investor's surname:");
+                else
+                    System.out.println("Enter your surname:");
                 break;
             case 2:
-                System.out.println("Enter your email address");
+                if (userType == UserType.INVESTOR)
+                    System.out.println("Enter investor's email address:");
+                else
+                    System.out.println("Enter your email address:");
                 break;
             case 3:
-                System.out.println("Enter your phone number");
+                if (userType == UserType.INVESTOR)
+                    System.out.println("Enter investor's phone number:");
+                else
+                    System.out.println("Enter your phone number:");
                 break;
             case 4:
                 if (userType == UserType.INVESTOR)
-                    System.out.println("Enter the amount you want to invest");
+                    System.out.println("Enter the amount the investor want to invest:");
                 else
-                    System.out.println("Enter the amount you want to borrow");
+                    System.out.println("Enter the amount you want to borrow:");
                 break;
             case 5:
                 if (userType == UserType.INVESTOR)
-                    System.out.println("Enter your desired interest. Format 0.xxx");
+                    System.out.println("Enter investor's desired interest. Format 0.xxx:");
                 else
-                    System.out.println("Enter the period of borrowing in months(must be multiple of 12, max 60)");
+                    System.out.println("Enter the period of borrowing in months(must be multiple of 12, max 60):");
                 break;
 
         }
@@ -121,10 +138,12 @@ public class Server {
         return true;
     }
 
-    public static void main(String[] args) {
-        Scanner in = new Scanner(System.in);
-        Bank bank = new Bank();
-
+    private static void readInvestorsFromKeyboard(Scanner in) {
+        if (bank == null) {
+            System.out.println("Our server has technical issues. Please contact our support team and report" +
+                    "this error. Thank you for understanding");
+            return;
+        }
         while (investorsNumber <= 0) {
             System.out.println("Insert the number of investors");
             investorsNumber = Integer.parseInt(in.nextLine());
@@ -155,6 +174,14 @@ public class Server {
                 System.out.println();
             }
         }
+    }
+
+    private static void readCreditors(Scanner in) {
+        if (bank == null) {
+            System.out.println("Our server has technical issues. Please contact our support team and report" +
+                    "this error. Thank you for understanding");
+            return;
+        }
 
         while (creditorsNumber <= 0) {
             System.out.println("Insert the number of creditors");
@@ -164,7 +191,7 @@ public class Server {
                 System.out.println();
             }
         }
-        tokens = new String[creditorsNumber * CREDITOR_PARAMETERS];
+        String[] tokens = new String[creditorsNumber * CREDITOR_PARAMETERS];
 
         int currentCreditor = 0;
         for (int i = 0; i < creditorsNumber * CREDITOR_PARAMETERS; i++) {
@@ -190,5 +217,50 @@ public class Server {
                 System.out.println();
             }
         }
+    }
+
+    private static void readInvestorsFromFile() {
+        String filepath = ("Investors/investors.csv");
+        try {
+            BufferedReader in = new BufferedReader(new FileReader(filepath));
+
+            String line;
+
+            while((line = in.readLine()) != null) {
+                String[] tokens = line.split(",");
+
+                bank.addInvestor(new Investor.InvestorBuilder().withName(tokens[0])
+                        .withSurname(tokens[1])
+                        .withEmailAddress(tokens[2])
+                        .withPhoneNumber(tokens[3])
+                        .withMoneyInvested(Double.parseDouble(tokens[4]))
+                        .withInterest(Double.parseDouble(tokens[5]))
+                        .withUniqueId(bank.getInvestors().size() + 1)
+                        .build());
+            }
+
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static void main(String[] args) {
+        Scanner in = new Scanner(System.in);
+        bank = Bank.getInstance();
+
+        System.out.println("Please choose a method to read investors. Type 1 for keyboard and 2 for file.");
+
+        int method = Integer.parseInt(in.nextLine());
+
+        if (method == 1) {
+            readInvestorsFromKeyboard(in);
+        }
+        else {
+            readInvestorsFromFile();
+        }
+
+        readCreditors(in);
     }
 }
