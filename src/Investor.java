@@ -1,93 +1,30 @@
-public class Investor implements Comparable<Investor> {
-    private int uniqueId;
-    private String name;
-    private String surname;
-    private String phoneNumber;
-    private String emailAddress;
+import java.util.function.Consumer;
+import java.util.stream.Stream;
+
+public class Investor extends Client implements Comparable<Investor> {
     private double moneyInvested;
     private double interest;
 
     static class InvestorBuilder {
-        Investor investor = new Investor();
+        interface InvestorSetter extends Consumer<Investor> {}
 
-        InvestorBuilder withName(String name) {
-            investor.setName(name);
-            return this;
-        }
+        static Investor build(InvestorSetter... investorSetters) {
+            final Investor investor = new Investor();
 
-        InvestorBuilder withSurname(String surname) {
-            investor.setSurname(surname);
-            return this;
-        }
+            Stream.of(investorSetters).forEach(
+                    setter -> setter.accept(investor)
+            );
 
-        InvestorBuilder withPhoneNumber(String phoneNumber) {
-            investor.setPhoneNumber(phoneNumber);
-            return this;
-        }
-
-        InvestorBuilder withEmailAddress(String emailAddress) {
-            investor.setEmailAddress(emailAddress);
-            return this;
-        }
-
-        InvestorBuilder withMoneyInvested(double moneyInvested) {
-            investor.setMoneyInvested(moneyInvested);
-            return this;
-        }
-
-        InvestorBuilder withInterest(double interest) {
-            investor.setInterest(interest);
-            return this;
-        }
-
-        InvestorBuilder withUniqueId(int id) {
-            investor.setUniqueId(id);
-            return this;
-        }
-
-        Investor build() {
             return investor;
         }
+
     }
 
     public Investor() {
+        super();
     }
 
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getSurname() {
-        return surname;
-    }
-
-    public void setSurname(String surname) {
-        this.surname = surname;
-    }
-
-    public String getPhoneNumber() {
-        return phoneNumber;
-    }
-
-    public void setPhoneNumber(String phoneNumber) {
-        this.phoneNumber = phoneNumber;
-    }
-
-    public String getEmailAddress() {
-        return emailAddress;
-    }
-
-    public void setEmailAddress(String emailAddress) {
-        this.emailAddress = emailAddress;
-    }
-
-    public double getMoneyInvested() {
-        return moneyInvested;
-    }
+    public double getMoneyInvested() { return moneyInvested; }
 
     public void setMoneyInvested(double moneyInvested) {
         this.moneyInvested = moneyInvested;
@@ -101,18 +38,14 @@ public class Investor implements Comparable<Investor> {
         this.interest = interest;
     }
 
-    public int getUniqueId() { return uniqueId; }
-
-    public void setUniqueId(int uniqueId) { this.uniqueId = uniqueId; }
-
     @Override
     public String toString() {
         return "Investor{" +
-                "uniqueId=" + uniqueId +
-                ", name='" + name + '\'' +
-                ", surname='" + surname + '\'' +
-                ", phoneNumber='" + phoneNumber + '\'' +
-                ", emailAddress='" + emailAddress + '\'' +
+                "uniqueId=" + getUniqueId() +
+                ", name='" + getName() + '\'' +
+                ", surname='" + getSurname() + '\'' +
+                ", phoneNumber='" + getPhoneNumber() + '\'' +
+                ", emailAddress='" + getEmailAddress() + '\'' +
                 ", moneyInvested=" + moneyInvested +
                 ", interest=" + interest +
                 '}';

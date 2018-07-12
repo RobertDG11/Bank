@@ -1,10 +1,9 @@
-public class Creditor {
+import java.util.function.Consumer;
+import java.util.stream.Stream;
+
+public class Creditor extends Client {
     private static final int MONTHS = 12;
 
-    private String name;
-    private String surname;
-    private String phoneNumber;
-    private String emailAddress;
     private int periodOfBorrowing;
     private double lunarRate;
     private double credit;
@@ -13,75 +12,34 @@ public class Creditor {
     private double aprcIndex;
 
     public Creditor() {
+        super();
         lunarRate = 0;
         aprcIndex = 0;
     }
-
-    public String getName() { return name; }
-
-    public void setName(String name) { this.name = name; }
-
-    public String getSurname() { return surname; }
-
-    public void setSurname(String surname) { this.surname = surname; }
-
-    public String getPhoneNumber() { return phoneNumber; }
-
-    public void setPhoneNumber(String phoneNumber) { this.phoneNumber = phoneNumber; }
-
-    public String getEmailAddress() { return emailAddress; }
-
-    public void setEmailAddress(String emailAddress) { this.emailAddress = emailAddress; }
-
-    public double getPeriodOfBorrowing() { return periodOfBorrowing; }
 
     public void setPeriodOfBorrowing(int periodOfBorrowing) { this.periodOfBorrowing = periodOfBorrowing; }
 
     public double getCredit() { return credit; }
 
-    public void setCredit(double credit) { this.credit = credit; }
+    public void setCredit(double credit) {
+        this.credit = credit;
+        creditBackup = credit;
+    }
 
     public double getCreditBackup() { return creditBackup; }
-
-    public void setCreditBackup(double credit) { this.creditBackup = credit; }
 
     public double getAprcIndex() { return aprcIndex; }
 
     static class CreditorBuilder {
-        Creditor creditor = new Creditor();
+        interface CreditorSetter extends Consumer<Creditor> {}
 
-        CreditorBuilder withName(String name) {
-            creditor.setName(name);
-            return this;
-        }
+        public static Creditor build(CreditorSetter... creditorSetters) {
+            final Creditor creditor = new Creditor();
 
-        CreditorBuilder withSurname(String surname) {
-            creditor.setSurname(surname);
-            return this;
-        }
+            Stream.of(creditorSetters).forEach(
+                    setter -> setter.accept(creditor)
+            );
 
-        CreditorBuilder withPhoneNumber(String phoneNumber) {
-            creditor.setPhoneNumber(phoneNumber);
-            return this;
-        }
-
-        CreditorBuilder withEmailAddress(String emailAddress) {
-            creditor.setEmailAddress(emailAddress);
-            return this;
-        }
-
-        CreditorBuilder withPeriodOfBorrowing(int periodOfBorrowing) {
-            creditor.setPeriodOfBorrowing(periodOfBorrowing);
-            return this;
-        }
-
-        CreditorBuilder withCredit(double credit) {
-            creditor.setCredit(credit);
-            creditor.setCreditBackup(credit);
-            return this;
-        }
-
-        Creditor build() {
             return creditor;
         }
     }
@@ -119,10 +77,10 @@ public class Creditor {
     @Override
     public String toString() {
         return "Creditor{" +
-                "name='" + name + '\'' +
-                ", surname='" + surname + '\'' +
-                ", phoneNumber='" + phoneNumber + '\'' +
-                ", emailAddress='" + emailAddress + '\'' +
+                "name='" + getName() + '\'' +
+                ", surname='" + getSurname() + '\'' +
+                ", phoneNumber='" + getPhoneNumber() + '\'' +
+                ", emailAddress='" + getEmailAddress() + '\'' +
                 ", periodOfBorrowing=" + periodOfBorrowing +
                 ", credit=" + credit +
                 '}';

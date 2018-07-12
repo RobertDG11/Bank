@@ -26,24 +26,6 @@ public class Bank {
         }
     }
 
-    public void removeInvestor(Investor investor) {
-        if (investors.contains(investor)) {
-            investors.remove(investor);
-        }
-    }
-
-    public void changeInvestorInterest(int uniqueId, double interest) {
-        Iterator<Investor> iterator = investors.iterator();
-        while(iterator.hasNext()) {
-            if (iterator.next().getUniqueId() == uniqueId) {
-                investors.remove(iterator.next());
-                iterator.next().setInterest(interest);
-                investors.add(iterator.next());
-                break;
-            }
-        }
-    }
-
     public void printSuccessfulMessage() {
         System.out.format("Mr/Mrs %s your credit was approved. For your credit of %.2f you will " +
                 "have to pay a lunar rate of %.2f for a total sum of %.2f. Your APRC index is %.2f%%" +
@@ -54,14 +36,7 @@ public class Bank {
     }
 
     private double calculateTotalAmount() {
-        double sum = 0;
-
-        Iterator<Investor> iterator = investors.iterator();
-        while(iterator.hasNext()) {
-            sum += iterator.next().getMoneyInvested();
-        }
-
-        return sum;
+        return investors.stream().mapToDouble(Investor::getMoneyInvested).sum();
     }
 
     public TreeSet<Investor> getInvestors() {
@@ -79,6 +54,7 @@ public class Bank {
         }
 
         Investor i = investors.pollFirst();
+
         if (i.getMoneyInvested() == 0) {
             System.out.println("Unfortunately we don't have enough funds now. Please try again later!");
             addInvestor(i);
@@ -110,7 +86,6 @@ public class Bank {
             } else {
                 System.out.println("Unfortunately we don't have enough funds now. Please try again later!");
                 addInvestor(i);
-                return;
             }
         }
     }
