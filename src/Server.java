@@ -118,14 +118,15 @@ public class Server {
         return true;
     }
 
-    private static Creditor getCreditor(String[] creditorFields) {
+    static Creditor getCreditor(String[] creditorFields) {
         return Creditor.CreditorBuilder.build(
-                creditor -> creditor.setName(creditorFields[0]),
-                creditor -> creditor.setSurname(creditorFields[1]),
-                creditor -> creditor.setEmailAddress(creditorFields[2]),
-                creditor -> creditor.setPhoneNumber(creditorFields[3]),
-                creditor -> creditor.setCredit(Double.parseDouble(creditorFields[4])),
-                creditor -> creditor.setPeriodOfBorrowing(Integer.parseInt(creditorFields[5]))
+                creditor -> creditor.setUniqueId(Integer.parseInt(creditorFields[0])),
+                creditor -> creditor.setName(creditorFields[1]),
+                creditor -> creditor.setSurname(creditorFields[2]),
+                creditor -> creditor.setEmailAddress(creditorFields[3]),
+                creditor -> creditor.setPhoneNumber(creditorFields[4]),
+                creditor -> creditor.setCredit(Double.parseDouble(creditorFields[5])),
+                creditor -> creditor.setPeriodOfBorrowing(Integer.parseInt(creditorFields[6]))
         );
     }
 
@@ -162,15 +163,15 @@ public class Server {
         }
     }
 
-    private static Investor getInvestor(String[] investorFields) {
+     static Investor getInvestor(String[] investorFields) {
         return Investor.InvestorBuilder.build(
-                investor -> investor.setName(investorFields[0]),
-                investor -> investor.setSurname(investorFields[1]),
-                investor -> investor.setEmailAddress(investorFields[2]),
-                investor -> investor.setPhoneNumber(investorFields[3]),
-                investor -> investor.setMoneyInvested(Double.parseDouble(investorFields[4])),
-                investor -> investor.setInterest(Double.parseDouble(investorFields[5])),
-                investor -> investor.setUniqueId(uniqueId++)
+                investor -> investor.setUniqueId(Integer.parseInt(investorFields[0])),
+                investor -> investor.setName(investorFields[1]),
+                investor -> investor.setSurname(investorFields[2]),
+                investor -> investor.setEmailAddress(investorFields[3]),
+                investor -> investor.setPhoneNumber(investorFields[4]),
+                investor -> investor.setMoneyInvested(Double.parseDouble(investorFields[5])),
+                investor -> investor.setInterest(Double.parseDouble(investorFields[6]))
         );
     }
 

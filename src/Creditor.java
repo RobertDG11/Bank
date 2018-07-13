@@ -26,6 +26,8 @@ public class Creditor extends Client {
         creditBackup = credit;
     }
 
+    public int getPeriodOfBorrowing() { return periodOfBorrowing; }
+
     public double getCreditBackup() { return creditBackup; }
 
     public double getAprcIndex() { return aprcIndex; }
