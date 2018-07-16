@@ -2,7 +2,7 @@ import java.util.function.Consumer;
 import java.util.stream.Stream;
 
 public class Creditor extends Client {
-    private static final int MONTHS = 12;
+    static final int MONTHS = 12;
 
     private int periodOfBorrowing;
     private double lunarRate;
@@ -21,10 +21,9 @@ public class Creditor extends Client {
 
     public double getCredit() { return credit; }
 
-    public void setCredit(double credit) {
-        this.credit = credit;
-        creditBackup = credit;
-    }
+    public void setCredit(double credit) { this.credit = credit; }
+
+    public void setCreditBackup(double creditBackup) { this.creditBackup = creditBackup; }
 
     public int getPeriodOfBorrowing() { return periodOfBorrowing; }
 
@@ -46,22 +45,8 @@ public class Creditor extends Client {
         }
     }
 
-    public void calculateLunarRate(double interest) {
-        lunarRate += credit * interest / (MONTHS * (1 -
-                Math.pow(1 + (interest / MONTHS), - periodOfBorrowing)));
-    }
-
-    public void calculateLunarRate(double amount, double interest) {
-        lunarRate += amount * interest / (MONTHS * (1 -
-                Math.pow(1 + (interest / MONTHS), - periodOfBorrowing)));
-    }
-
-    public void calculateAPRC() {
-        aprcIndex = getLunarRate()  / getTotalToPay();
-    }
-
     public void addCommission(double commission) {
-        lunarRate += commission * credit;
+        lunarRate += commission * creditBackup;
     }
 
     public void calculateTotalToPay() {
@@ -76,6 +61,10 @@ public class Creditor extends Client {
         return totalToPay;
     }
 
+    public void setLunarRate(double lunarRate) { this.lunarRate += lunarRate; }
+
+    public void setAprcIndex(double aprcIndex) { this.aprcIndex = aprcIndex; }
+
     @Override
     public String toString() {
         return "Creditor{" +
@@ -84,7 +73,7 @@ public class Creditor extends Client {
                 ", phoneNumber='" + getPhoneNumber() + '\'' +
                 ", emailAddress='" + getEmailAddress() + '\'' +
                 ", periodOfBorrowing=" + periodOfBorrowing +
-                ", credit=" + credit +
+                ", credit=" + creditBackup +
                 '}';
     }
 }

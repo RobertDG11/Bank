@@ -7,7 +7,7 @@ import java.util.stream.StreamSupport;
 
 public class Database implements IDatabase {
     private static final String JDBC_DRIVER = "com.mysql.cj.jdbc.Driver";
-    private static final String DB_URL = "jdbc:mysql://localhost:3306/sys?verifyServerCertificate=false&useSSL=true";
+    private static final String DB_URL = "jdbc:mysql://localhost:3306/Bank?verifyServerCertificate=false&useSSL=true";
 
     private static final String USER = "root";
     private static final String PASS = "k7vGktpdcbb5";
@@ -178,6 +178,18 @@ public class Database implements IDatabase {
         }
     }
 
+    void alterTableIncrement(String sql_query, int uniqueId) {
+        try {
+            PreparedStatement preparedStatement = connection.prepareStatement(sql_query);
+            preparedStatement.setInt(1, uniqueId);
+
+            preparedStatement.executeUpdate();
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
     void insertValues(String sql_query, Client client) {
         if (client instanceof Investor) {
             insertValuesIntoClient(sql_query.split(";")[0], client);
@@ -257,9 +269,9 @@ public class Database implements IDatabase {
         try {
             PreparedStatement preparedStatement = connection.prepareStatement(sql_query);
             preparedStatement.setDouble(1, newValue);
-            preparedStatement.setInt(1, uniqueId);
+            preparedStatement.setInt(2, uniqueId);
 
-            preparedStatement.executeQuery();
+            preparedStatement.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -273,60 +285,9 @@ public class Database implements IDatabase {
             preparedStatement.setDouble(2, arpcIndex);
             preparedStatement.setInt(3, uniqueId);
 
-            preparedStatement.executeQuery();
+            preparedStatement.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
         }
-    }
-
-    public static void main(String[] args) {
-        Database db = new Database();
-        String[] fields = {"1", "asd", "asd", "asd", "asd", "123", "0.3"};
-
-        Client c = Server.getInvestor(fields);
-
-        db.createTable("create table client " +
-                "(" +
-                "unique_id int auto_increment," +
-                "name varchar(20) not null," +
-                "surname varchar(20) not null," +
-                "email_address varchar(20) not null," +
-                "phone_number varchar(20) not null," +
-                "primary key(unique_id)" +
-                ");");
-
-        db.createTable("create table investor " +
-                "(" +
-                "unique_id int auto_increment," +
-                "money_invested double not null," +
-                "interest double not null," +
-                "foreign key(unique_id) references client(unique_id)" +
-                ");");
-
-        db.createTable("create table creditor " +
-                "(" +
-                "unique_id int auto_increment," +
-                "credit double not null," +
-                "period_borrowing double not null," +
-                "lunar_rate double default 0," +
-                "arpc_index double default 0," +
-                "foreign key(unique_id) references client(unique_id)" +
-                ");");
-
-//        db.insertValuesIntoClient("insert into client (name, surname, email_address, phone_number) values (?, ?, ?, ?);", c);
-//        db.insertValuesIntoInvestor("insert into investor (money_invested, interest) values (?, ?);", c);
-//        db.insertValuesIntoClient("insert into client (name, surname, email_address, phone_number) values (?, ?, ?, ?);", c);
-//        db.insertValuesIntoInvestor("insert into investor (money_invested, interest) values (?, ?);", c);
-//        db.insertValuesIntoClient("insert into client (name, surname, email_address, phone_number) values (?, ?, ?, ?);", c);
-
-        Stream<Client> stream = db.getInvestors("select * from client natural join investor;");
-        stream.forEach(i -> System.out.println(i.toString()));
-
-        c = db.getClient("select * from client natural join investor where unique_id=?", 13);
-        System.out.println(c.toString());
-
-
-        //ResultSet rs;
-
     }
 }

@@ -3,33 +3,37 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Scanner;
+import java.util.TreeSet;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class Server {
-    private static final int CREDITOR_PARAMETERS = 6;
+    private static final int CREDITOR_PARAMETERS = 7;
+    private static final String PATH = "Investors/investors.csv";
 
-    private static int uniqueId = 0;
     private static int creditorNoParameter;
     private static Bank bank;
+    private static Database database;
+    private static int uniqueId;
 
     private static void uiMessages() {
         switch (creditorNoParameter % CREDITOR_PARAMETERS) {
-            case 0:
+            case 1:
                     System.out.println("Enter your name:");
                 break;
-            case 1:
+            case 2:
                     System.out.println("Enter your surname:");
                 break;
-            case 2:
+            case 3:
                     System.out.println("Enter your email address:");
                 break;
-            case 3:
+            case 4:
                     System.out.println("Enter your phone number:");
                 break;
-            case 4:
+            case 5:
                     System.out.println("Enter the amount you want to borrow:");
                 break;
-            case 5:
+            case 6:
                     System.out.println("Enter the period of borrowing in months(must be multiple of 12, max 60):");
                 break;
         }
@@ -101,17 +105,17 @@ public class Server {
 
     private static boolean checkParameters(String parameter) {
         switch (creditorNoParameter % CREDITOR_PARAMETERS) {
-            case 0:
-                return checkName(parameter);
             case 1:
-                return checkSurname(parameter);
+                return checkName(parameter);
             case 2:
-                return checkEmail(parameter);
+                return checkSurname(parameter);
             case 3:
-                return checkPhoneNumber(parameter);
+                return checkEmail(parameter);
             case 4:
-                return checkAmount(parameter);
+                return checkPhoneNumber(parameter);
             case 5:
+                return checkAmount(parameter);
+            case 6:
                 return checkPeriodOfBorrowing(parameter);
         }
 
@@ -126,6 +130,7 @@ public class Server {
                 creditor -> creditor.setEmailAddress(creditorFields[3]),
                 creditor -> creditor.setPhoneNumber(creditorFields[4]),
                 creditor -> creditor.setCredit(Double.parseDouble(creditorFields[5])),
+                creditor -> creditor.setCreditBackup(Double.parseDouble(creditorFields[5])),
                 creditor -> creditor.setPeriodOfBorrowing(Integer.parseInt(creditorFields[6]))
         );
     }
@@ -144,22 +149,36 @@ public class Server {
         boolean isQuitting = false;
 
         while (!isQuitting) {
+            if (creditorNoParameter % CREDITOR_PARAMETERS == 0) {
+                tokens[creditorNoParameter % CREDITOR_PARAMETERS] = String.valueOf(uniqueId);
+                uniqueId++;
+                creditorNoParameter++;
+            }
             do {
                 uiMessages();
                 tokens[creditorNoParameter % CREDITOR_PARAMETERS] = in.nextLine();
-                if (tokens[creditorNoParameter % CREDITOR_PARAMETERS].matches("q|Q")) {
+                if (tokens[creditorNoParameter % CREDITOR_PARAMETERS].matches("[qQ]")) {
                     isQuitting = true;
                     break;
                 }
 
-            } while (!checkParameters(tokens[creditorNoParameter % 6]));
+            } while (!checkParameters(tokens[creditorNoParameter % CREDITOR_PARAMETERS]));
 
             if (creditorNoParameter % CREDITOR_PARAMETERS == 0) {
                 bank.setCreditor(getCreditor(tokens));
+                database.insertValues(SqlQueries.INSERT_CLIENT_TABLE +
+                        SqlQueries.INSERT_CREDITOR_TABLE,
+                        bank.getCreditor());
+
+                bank.setInvestors(database.getInvestors(SqlQueries.SELECT_INVESTORS)
+                        .collect(Collectors.toCollection(TreeSet::new)));
+
                 bank.executeTransaction();
+                updateInvestors();
+                updateCreditor();
+
                 System.out.println();
             }
-
         }
     }
 
@@ -182,19 +201,44 @@ public class Server {
             return;
         }
 
-        Path path = Paths.get("C:\\Users\\user\\IdeaProjects\\Streams\\investors.csv");
+        Path path = Paths.get(PATH);
+        uniqueId = (int)Files.lines(path).count() + 1;
         Stream<Investor> investors = Files.lines(path)
                 .map(line -> line.split(","))
                 .map(Server::getInvestor);
 
-        investors.forEach(investor -> bank.addInvestor(investor));
+        investors.forEach(investor -> database.insertValues(
+                SqlQueries.INSERT_CLIENT_TABLE +
+                        SqlQueries.INSERT_INVESTOR_TABLE,
+                investor));
+    }
+
+    private static void updateInvestors() {
+        bank.getInvestors().stream().forEach(investor -> database.updateInvestor(
+                SqlQueries.UPDATE_INVESTOR,
+                ((Investor)investor).getMoneyInvested(),
+                investor.getUniqueId()));
+    }
+
+    private static void updateCreditor() {
+        database.updateCreditor(
+                SqlQueries.UPDATE_CREDITOR,
+                bank.getCreditor().getLunarRate(),
+                bank.getCreditor().getAprcIndex(),
+                bank.getCreditor().getUniqueId());
     }
 
     public static void main(String[] args) {
         bank = Bank.getInstance();
+        database = new Database();
+
+        database.createTable(SqlQueries.CREATE_CLIENT_TABLE);
+        database.createTable(SqlQueries.CREATE_INVESTOR_TABLE);
+        database.createTable(SqlQueries.CREATE_CREDITOR_TABLE);
 
         try {
             readInvestorsFromFile();
+            database.alterTableIncrement(SqlQueries.ALTER_INCREMENT, uniqueId);
         } catch (IOException e) {
             e.printStackTrace();
         }

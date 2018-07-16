@@ -1,16 +1,13 @@
-import java.util.Iterator;
 import java.util.TreeSet;
 
 public class Bank {
     private static final double COMMISSION = 0.003;
     private static Bank bank;
 
-    private TreeSet<Investor> investors;
+    private TreeSet<Client> investors;
     private Creditor creditor;
 
-    private Bank() {
-        investors = new TreeSet<>();
-    }
+    private Bank() { }
 
     public static Bank getInstance() {
         if (bank == null) {
@@ -36,16 +33,34 @@ public class Bank {
     }
 
     private double calculateTotalAmount() {
-        return investors.stream().mapToDouble(Investor::getMoneyInvested).sum();
+        return investors.stream().mapToDouble(client -> ((Investor)client).getMoneyInvested()).sum();
     }
 
-    public TreeSet<Investor> getInvestors() {
+    public TreeSet<Client> getInvestors() {
         return investors;
+    }
+
+    private void calculateLunarRate(double interest) {
+        creditor.setLunarRate(creditor.getCredit() * interest / (Creditor.MONTHS * (1 -
+                Math.pow(1 + (interest / Creditor.MONTHS), - creditor.getPeriodOfBorrowing()))));
+    }
+
+    private void calculateLunarRate(double amount, double interest) {
+        creditor.setLunarRate(amount * interest / (Creditor.MONTHS * (1 -
+                Math.pow(1 + (interest / Creditor.MONTHS), - creditor.getPeriodOfBorrowing()))));
+    }
+
+    private void calculateAPRC() {
+        creditor.setAprcIndex(creditor.getLunarRate()  / creditor.getTotalToPay());
     }
 
     public void setCreditor(Creditor creditor) {
         this.creditor = creditor;
     }
+
+    public Creditor getCreditor() { return creditor; }
+
+    public void setInvestors(TreeSet<Client> investors) { this.investors = investors; }
 
     public void executeTransaction() {
         if (investors.isEmpty()) {
@@ -53,7 +68,7 @@ public class Bank {
             return;
         }
 
-        Investor i = investors.pollFirst();
+        Investor i = (Investor)investors.pollFirst();
 
         if (i.getMoneyInvested() == 0) {
             System.out.println("Unfortunately we don't have enough funds now. Please try again later!");
@@ -63,10 +78,10 @@ public class Bank {
         }
 
         if (i.getMoneyInvested() >= creditor.getCredit()) {
-            creditor.calculateLunarRate(i.getInterest());
+            calculateLunarRate(i.getInterest());
             creditor.addCommission(COMMISSION);
             creditor.calculateTotalToPay();
-            creditor.calculateAPRC();
+            calculateAPRC();
 
             i.withdrawMoney(creditor.getCredit());
             addInvestor(i);
@@ -77,7 +92,7 @@ public class Bank {
 
         if (i.getMoneyInvested() < creditor.getCredit()) {
             if (calculateTotalAmount() >= creditor.getCredit()) {
-                creditor.calculateLunarRate(i.getMoneyInvested(), i.getInterest());
+                calculateLunarRate(i.getMoneyInvested(), i.getInterest());
                 creditor.setCredit(creditor.getCredit() - i.getMoneyInvested());
 
                 i.withdrawMoney(i.getMoneyInvested());
